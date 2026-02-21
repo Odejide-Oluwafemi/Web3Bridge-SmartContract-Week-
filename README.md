@@ -95,6 +95,24 @@ Mappings on the other hand are still stored in Storage even when referenced in a
 - Write in Code the complete ERC20 implementation from scratch without using any libraries.
 
 ```solidity
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.3;
+
+interface IMyERC20 {
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+
+    function balanceOf(address account) external view returns (uint256);
+    function transfer(address to, uint256 value) external returns (bool);
+    function allowance(address owner, address spender) external view returns (uint256);
+    function approve(address spender, uint256 value) external returns (bool);
+    function transferFrom(address from, address to, uint256 value) external returns (bool);
+
+    function totalSupply() external view returns (uint256);
+    function name() external view returns (string memory);
+    function decimals() external view returns (uint256);
+}
+
 contract MyERC20 is IMyERC20 {
     // Errors
     error MyERC20__AddressZeroError();
