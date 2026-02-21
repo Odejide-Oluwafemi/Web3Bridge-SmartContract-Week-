@@ -95,78 +95,138 @@ Mappings on the other hand are still stored in Storage even when referenced in a
 - Write in Code the complete ERC20 implementation from scratch without using any libraries.
 
 ```solidity
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.28;
+contract MyERC20 is IMyERC20 {
+    // Errors
+    error MyERC20__AddressZeroError();
+    error MyERC20__InsufficientFunds();
+    error MyERC20__InsufficientAllowance();
+    error MyERC20__ThisAmountOfNewTokenCannotBePurchased();
 
-contract MyERC20 {
-  // Errors
-  error MyERC20__AddressZeroError();
-  error MyERC20__InsufficientFunds();
-  error MyERC20__InsufficientAllowance();
+    uint256 public constant ETH_TO_TOKEN_PRICE = 0.001 ether; // this means that 0.001 ETH == 1 unit of Token, so 1 ETH will be equal to 1000 token
+    string private NAME;
+    string private SYMBOL;
+    uint8 private DECIMALS;
+    uint256 private TOTAL_SUPPLY;
+    address public immutable OWNER;
 
-  string public name;
-  string public symbol;
-  uint8 public immutable decimals;
-  uint256 public immutable totalSupply;
+    mapping(address owner => uint256 amount) _balances;
+    mapping(address owner => mapping(address spender => uint256 amount)) _allowances;
 
-  mapping(address => uint256)  _balances;
+    constructor(
+        string memory _name,
+        string memory _symbol,
+        uint8 _decimals,
+        uint256 _totalSupply
+    ) {
+        NAME = _name;
+        SYMBOL = _symbol;
+        DECIMALS = _decimals;
+        TOTAL_SUPPLY = _totalSupply;
+        _balances[address(this)] = _totalSupply;
+        OWNER = msg.sender;
+    }
 
-  // Speder => Owner => tokes allowed
-  mapping(address => mapping(address => uint256))  _allowances;
+    function buyToken() external payable returns (bool) {
+        uint amountBought = getTokenQuantityForEth(msg.value);
 
-  event Transfer(address indexed _from, address indexed _to, uint256 _value);
-  event Approval(address indexed _owner, address indexed _spender, uint256 _value);
+        if (balanceOf(address(this)) < amountBought)
+            revert MyERC20__ThisAmountOfNewTokenCannotBePurchased();
 
-  constructor(string memory _name, string memory _symbol, uint256 _totalSupply) {
-    name = _name;
-    symbol = _symbol;
-    decimals = 18;
-    totalSupply = _totalSupply;
-    balances[msg.sender] = _totalSupply;
-  }
+        _balances[address(this)] -= amountBought;
+        _balances[msg.sender] += amountBought;
 
-  function balanceOf(address _owner) public view returns (uint256) {
-    if(_owner != address(0)) revert MyERC20__AddressZeroError();
-    return _balances[_owner];
-  }
+        emit Transfer(address(this), msg.sender, amountBought);
 
-  function transfer(address _to, uint256 _value) public returns (bool success) {
-    if (!(_balances[msg.sender] > 0 && _balances[msg.sender] >= _value))
-      revert MyERC20__InsufficientFunds();
-    
-    _balances[msg.sender] -= _value;
-    _balances[_to] += _value;
+        return true;
+    }
 
-    emit Transfer(msg.sender, _to, _value);
-    return true;
-  }
+    modifier onlyOwner() {
+        require(msg.sender == OWNER, "Only Owner can call this function");
+        _;
+    }
 
-  function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
-    if (_allowances[msg.sender][_from] <= value) revert MyERC20__InsufficientAllowance();
-    if (!(_balances[_from] > 0 && _balances[_from] >= _value)) revert MyERC20__InsufficientFunds();
+    function withdraw() external onlyOwner {
+        (bool success, ) = payable(OWNER).call{value: address(this).balance}(
+            ""
+        );
+        require(success);
+    }
 
-    _balances[_from] -= _value;
-    _balances[_to] += value;
-    _allowances[msg.sender][_from] -= value;
+    function getTokenQuantityForEth(uint ethAmount) public pure returns (uint) {
+        return ethAmount / ETH_TO_TOKEN_PRICE;
+    }
 
-    emit Transfer(_from, _to, _value);
-    return true;
-  }
+    function checkRemainingSupply() external view returns (uint) {
+        return balanceOf(address(this));
+    }
 
-  function approve(address _spender, uint256 _value) public returns (bool) {
-    if (!(_balances[msg.sender] > 0 && _balances[msg.sender] >= _value))
-      revert MyERC20__InsufficientFunds();
-    
-    _allowances[_spender][msg.sender] = _value;
+    function balanceOf(address _owner) public view returns (uint256) {
+        if (_owner == address(0)) revert MyERC20__AddressZeroError();
+        return _balances[_owner];
+    }
 
-    emit Approval(msg.sender, _spender, _value);
+    function transfer(
+        address _to,
+        uint256 _value
+    ) public returns (bool success) {
+        if (_balances[msg.sender] < _value) revert MyERC20__InsufficientFunds();
 
-    return true;
-  }
+        _balances[msg.sender] -= _value;
+        _balances[_to] += _value;
 
-  function allowance(address _owner, address _spender) public view returns (uint256) {
-    return allowances[_spender][_owner];
-  }
+        emit Transfer(msg.sender, _to, _value);
+        return true;
+    }
+
+    function transferFrom(
+        address _from,
+        address _to,
+        uint256 _value
+    ) public returns (bool) {
+        if (_allowances[_from][msg.sender] < _value)
+            revert MyERC20__InsufficientAllowance();
+
+        if (_balances[_from] < _value) revert MyERC20__InsufficientFunds();
+
+        _balances[_from] -= _value;
+        _balances[_to] += _value;
+        _allowances[_from][msg.sender] -= _value;
+
+        emit Transfer(_from, _to, _value);
+        return true;
+    }
+
+    function approve(address _spender, uint256 _value) public returns (bool) {
+        if (!(_balances[msg.sender] > 0 && _balances[msg.sender] >= _value))
+            revert MyERC20__InsufficientFunds();
+
+        _allowances[msg.sender][_spender] = _value;
+
+        emit Approval(msg.sender, _spender, _value);
+
+        return true;
+    }
+
+    function allowance(
+        address _owner,
+        address _spender
+    ) public view returns (uint256) {
+        return _allowances[_owner][_spender];
+    }
+
+    function name() external view override returns (string memory) {
+        return NAME;
+    }
+
+    function decimals() external view override returns (uint256) {
+        return DECIMALS;
+    }
+
+    function totalSupply() external view override returns (uint256) {
+        return TOTAL_SUPPLY;
+    }
+
+    receive() external payable {}
 }
 ```
 
