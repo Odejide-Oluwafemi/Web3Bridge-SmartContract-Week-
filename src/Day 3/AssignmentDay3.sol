@@ -7,13 +7,18 @@ contract SchoolManagementSystem {
     /*
         Create a School management system where people can:
 
-        - Register students & Staffs.
+        - Register students & Employ Staffs.
         - Pay School fees on registration.
         - Pay staffs also.
         - Get the students and their details.
         - Get all Staffs.
         - Pricing is based on grade / levels from 100 - 400 level.
         - Payment status can be updated once the payment is made which should include the timestamp.
+
+        ========================================================================================================================
+        =================================================== Added Task =========================================================
+        - Remove a registered student
+        - Suspend Staff
     */
 
     // Errors
@@ -22,6 +27,8 @@ contract SchoolManagementSystem {
     error OnlyOwnerCanCallThisFunction();
     error SchoolHasInsufficientFundsToPayStaffs();
     error Assignment__YouNeedToApproveFirst();
+    error NotARegisteredStudent();
+    error NotARegisteredStaff();
 
     // Enums
     enum PaymentStatus {
@@ -43,6 +50,7 @@ contract SchoolManagementSystem {
         Grade grade;
         PaymentStatus paymentStatus;
         uint paymentTime;
+        bool suspended;
     }
 
     struct Staff {
@@ -51,6 +59,7 @@ contract SchoolManagementSystem {
         uint8 age;
         uint salary;
         uint timeLastPaid;
+        bool suspended;
     }
 
     // Events
@@ -108,7 +117,8 @@ contract SchoolManagementSystem {
             age: _age,
             grade: _grade,
             paymentStatus: PaymentStatus.Paid,
-            paymentTime: block.timestamp
+            paymentTime: block.timestamp,
+            suspended: false
         });
 
         allStudents.push(newStudent);
@@ -141,7 +151,8 @@ contract SchoolManagementSystem {
             name: _name,
             age: _age,
             salary: BASE_STAFF_SALARY,
-            timeLastPaid: 0
+            timeLastPaid: 0,
+            suspended: false
         });
 
         allStaffs.push(newStaff);
@@ -166,6 +177,20 @@ contract SchoolManagementSystem {
         if (!success) revert SchoolHasInsufficientFundsToPayStaffs();
     }
 
+    function suspendStudent(address studentAddress) public onlyOwner {
+        if (studentDetailFromAddress[studentAddress].paymentTime == 0) revert NotARegisteredStudent();
+
+        Student storage student = studentDetailFromAddress[studentAddress];
+        student.suspended = true;
+    }
+
+    function suspendStaff(address staffAddress) public onlyOwner {
+        if (staffDetailFromAddress[staffAddress].walletAddress == address(0)) revert NotARegisteredStaff();
+
+        Staff storage staff = staffDetailFromAddress[staffAddress];
+        staff.suspended = true;
+    }
+
     // Read Functions
     function getSchoolTokenBalance() external view returns (uint) {
         return token.balanceOf(address(this));
@@ -182,12 +207,17 @@ contract SchoolManagementSystem {
     /*
         Create a School management system where people can:
 
-        - Register students & Staffs.
+        - Register students & Employ Staffs.
         - Pay School fees on registration.
+        - Pay staffs also.
         - Get the students and their details.
+        - Get all Staffs.
         - Pricing is based on grade / levels from 100 - 400 level.
         - Payment status can be updated once the payment is made which should include the timestamp.
-        - Pay staffs also.
-        - Get all Staffs.
+
+        ========================================================================================================================
+        =================================================== Added Task =========================================================
+        - Remove a registered student
+        - Suspend Staff
     */
 }

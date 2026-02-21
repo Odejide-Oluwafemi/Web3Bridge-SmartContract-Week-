@@ -254,9 +254,14 @@ Create a School management system where people can:
 
 ---
 
-# Day 6 Deployments
+# Day 6: Assessment
+### Deployments
 * Todo: [0x6fdE1CDfD96e56a9713751D4aA51862389A9E6A5](https://sepolia-blockscout.lisk.com/address/0x6fdE1CDfD96e56a9713751D4aA51862389A9E6A5?tab=index)
 * SaveEther: [0x03e0Db364E8E721b232602eeB7CE80Da37875e5e](https://sepolia-blockscout.lisk.com/address/0x03e0Db364E8E721b232602eeB7CE80Da37875e5e)
 * MyERC20: [0xf7E57954868f91b6e4ace2eFD776c31b380d1434](https://sepolia-blockscout.lisk.com/address/0xf7E57954868f91b6e4ace2eFD776c31b380d1434)
 * School Management: [0xF2e984a6daD2F590A89Dc4487B951ba599607a75](https://sepolia-blockscout.lisk.com/address/0xF2e984a6daD2F590A89Dc4487B951ba599607a75)
 * SaveToken: [0xC459c1eF554bA4C918a75BFA95060622261B6BE0](https://sepolia-blockscout.lisk.com/address/0xC459c1eF554bA4C918a75BFA95060622261B6BE0)
+
+###  Added Task
+* \- Remove a registered student
+* \- Suspend Staff
