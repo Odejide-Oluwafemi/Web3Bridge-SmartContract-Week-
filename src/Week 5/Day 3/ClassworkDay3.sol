@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.3;
 
-import {MyERC20} from "src/Day 2/MyERC20.sol";
+import {MyERC20} from "src/Week 5/Day 2/MyERC20.sol";
 
 contract SaveToken {
     // Errors
