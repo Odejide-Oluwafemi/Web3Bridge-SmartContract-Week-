@@ -73,8 +73,8 @@ contract SchoolManagementSystem {
     address immutable owner;
     MyERC20 immutable token;
 
-    uint256 public constant BASE_REGISTRATION_FEE = 100;
-    uint256 public constant BASE_STAFF_SALARY = 500; // 500 STK token (equivalent to 0.5 ETH based on 0.001 ETH/STK price)
+    uint256 public constant BASE_REGISTRATION_FEE = 500;
+    uint256 public constant BASE_STAFF_SALARY = 300; // 300 STK token (equivalent to 0.3 ETH based on 0.001 ETH/STK price)
 
     Student[] private allStudents;
     Staff[] private allStaffs;
