@@ -82,8 +82,7 @@ contract PropertyManagement {
     function setPropertyForSale(uint _id, bool forSale) public onlyPropertyOwner(_id) {
         Property storage property = idToProperty[_id];
         property.isListedForSale = forSale;
-
-
+        allProperties[getPropertyIndex(_id)] = property;
     }
 
     //=========================
@@ -97,10 +96,10 @@ contract PropertyManagement {
         return allProperties;
     }
 
-    function getProperty(uint _id) external view returns(Property memory property) {
+    function getPropertyIndex(uint _id) public view returns(uint propertyIndex) {
         for(uint index; index < allProperties.length; index++) {
             if (allProperties[index].id == _id) {
-                property = allProperties[index];
+                propertyIndex = index;
             }
         }
     }
