@@ -170,11 +170,14 @@ contract SchoolManagementSystem {
     function payStaff(uint index) public onlyOwner {
         Staff memory staffDetails = allStaffs[index];
 
-        allStaffs[index].timeLastPaid = block.timestamp;
+        if (!staffDetails.suspended) {
+            allStaffs[index].timeLastPaid = block.timestamp;
 
-        bool success = token.transfer(staffDetails.walletAddress, staffDetails.salary);
+            bool success = token.transfer(staffDetails.walletAddress, staffDetails.salary);
 
-        if (!success) revert SchoolHasInsufficientFundsToPayStaffs();
+            if (!success) revert SchoolHasInsufficientFundsToPayStaffs();
+        }
+
     }
 
     function suspendStudent(address studentAddress) public onlyOwner {
