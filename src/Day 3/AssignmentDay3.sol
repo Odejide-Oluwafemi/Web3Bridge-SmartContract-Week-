@@ -67,7 +67,14 @@ contract SchoolManagementSystem {
         address indexed studentAddress,
         Student studentDetail
     );
+    
+    event StudentSuspended(Student indexed student);
+
     event StaffRegistered(address indexed staffAddress, Staff staffDetail);
+
+    event StaffPaid(Staff indexed staffDetails);
+
+    event StaffSuspended(Staff indexed staff);
 
     // State Variables
     address immutable owner;
@@ -176,8 +183,9 @@ contract SchoolManagementSystem {
             bool success = token.transfer(staffDetails.walletAddress, staffDetails.salary);
 
             if (!success) revert SchoolHasInsufficientFundsToPayStaffs();
-        }
 
+            emit StaffPaid(allStaffs[index]);
+        }
     }
 
     function suspendStudent(address studentAddress) public onlyOwner {
@@ -185,6 +193,8 @@ contract SchoolManagementSystem {
 
         Student storage student = studentDetailFromAddress[studentAddress];
         student.suspended = true;
+
+        emit StudentSuspended(student);
     }
 
     function suspendStaff(address staffAddress) public onlyOwner {
@@ -192,6 +202,8 @@ contract SchoolManagementSystem {
 
         Staff storage staff = staffDetailFromAddress[staffAddress];
         staff.suspended = true;
+
+        emit StaffSuspended(staff);
     }
 
     // Read Functions
